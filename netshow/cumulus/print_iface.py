@@ -12,6 +12,7 @@ from netshowlib.linux import common as linux_common
 from netshow.cumulus.common import _
 import inflection
 
+
 def iface(name, cache=None):
     """
     :return: ``:class:PrintIface`` instance that matches \
@@ -138,11 +139,14 @@ class PrintIface(linux_printiface.PrintIface):
         return _str
 
     def counters_summary(self):
-        """
-        if counters are available print a summary of the counters.
+        """ print summary of cumulus counters
+        Returns:
+            table of unicast, broadcast, multicast and error tx/rx counters
+            if executed on cumulus VM/non Cumulus but Linux platform,
+            this returns nothing
         """
         _counters = self.iface.counters
-        if not _counters:
+        if not _counters and not _counters.tx:
             return ''
         _counters_all = _counters.all
         _header = [_('counters'), _('tx'), _('rx')]
