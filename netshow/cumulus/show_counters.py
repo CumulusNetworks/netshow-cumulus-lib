@@ -48,7 +48,6 @@ class ShowCounters(object):
         if self.use_json:
             return json.dumps(self.ifacelist,
                               cls=NetEncoder, indent=4)
-
         return self.print_counters()
 
     def print_counters(self):
@@ -59,6 +58,9 @@ class ShowCounters(object):
                    _('ucast'), _('mcast'), _('bcast'), _('errors')]
         _table = []
         for _piface in self.ifacelist.values():
+            if not _piface.iface.counters.rx:
+                return "This is probably Cumulus VX, or ethtool -S doesn't work for this user. " \
+                    "Cannot produce valid counters yet"
             _rx_counters = _piface.iface.counters.rx
             _tx_counters = _piface.iface.counters.tx
             _table.append([_piface.linkstate, _piface.name,
