@@ -82,3 +82,40 @@ class TestCumulusCounters(object):
         _output = self.counters.all
         assert_equals(_output['rx'].get('unicast'), 100)
         assert_equals(_output['tx'].get('errors'), 20)
+
+    def test_total_rx(self):
+        # has RX counters by default its 0
+        assert_equals(self.counters.total_rx, 0)
+        # no RX counters
+        self.counters.rx = None
+        assert_equals(self.counters.total_rx, None)
+
+    def test_total_tx(self):
+        # has TX counters by default its 0
+        assert_equals(self.counters.total_tx, 0)
+        # no TX counters
+        self.counters.tx = None
+        assert_equals(self.counters.total_tx, None)
+
+    def test_total_err(self):
+        # has to have tx and rx counters
+        assert_equals(self.counters.total_err, 0)
+
+    def test_total_err_no_tx(self):
+        # no tx counters, should still report rx errs
+        self.counters.tx = None
+        assert_equals(self.counters.total_err, 0)
+
+    def test_total_err_no_rx(self):
+        # no rx counters. should still report tx errs
+        self.counters.rx = None
+        assert_equals(self.counters.total_err, 0)
+
+    def test_total_err_no_rx_no_tx(self):
+        # no tx, no rx counters. should report none
+        self.counters.rx = None
+        self.counters.tx = None
+        assert_equals(self.counters.total_err, None)
+
+
+
