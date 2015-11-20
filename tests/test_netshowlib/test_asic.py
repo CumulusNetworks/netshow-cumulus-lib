@@ -41,6 +41,13 @@ def test_cacheinfo(mock_exec):
 
 
 @mock.patch('netshowlib.cumulus.asic.linux_common.exec_command')
+def test_cacheinfo_asic_not_detected(mock_exec):
+    mock_exec.side_effect = linux_common.ExecCommandException
+    _output = asic.cacheinfo()
+    assert_equals(_output,  {'asicports': {}, 'kernelports': {}})
+
+
+@mock.patch('netshowlib.cumulus.asic.linux_common.exec_command')
 def test_cacheinfo_ports_not_initialized(mock_exec):
     mock_exec.return_value = open(
         'tests/test_netshowlib/lspci_output.txt', 'rb').read()

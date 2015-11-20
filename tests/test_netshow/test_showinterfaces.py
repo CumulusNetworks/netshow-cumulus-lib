@@ -77,4 +77,4 @@ class TestCumulusShowInterfaces(object):
         self.showint.single_iface = 'swp3'
         self.showint.use_json = True
         _output = self.showint.print_single_iface()
-        from nose.tools import set_trace; set_trace()
+        assert_equals(_output, '')

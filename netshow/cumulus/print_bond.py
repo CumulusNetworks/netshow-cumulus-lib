@@ -42,13 +42,15 @@ class PrintBondMember(cumulus_print_iface.PrintIface,
 
     def cli_output(self):
         """
-        cli output of the linux bond member interface
+        cli output of the linux bond member interface.
+        Does not print out counters for cumulus VM
         :return: output for 'netshow interface <ifacename>'
         """
         _str = self.cli_header() + self.new_line()
         _str += self.bondmem_details() + self.new_line()
-        _str += cumulus_print_iface.PrintIface.counters_summary(self) + \
-            self.new_line()
+        if self.iface.counters.tx:
+            _str += cumulus_print_iface.PrintIface.counters_summary(self) + \
+                self.new_line()
         _str += self.lldp_details() + self.new_line()
         return _str
 
@@ -110,19 +112,32 @@ class PrintBond(cumulus_print_iface.PrintIface, linux_print_bond.PrintBond):
         _bondmembers = self.iface.members.values()
         if len(_bondmembers) == 0:
             return _('no_bond_members_found')
+        if _bondmembers[0].counters.tx:
+            _header = ['', _('port'), _('speed'),
+                       _('tx'), _('rx'), _('err'), _('link_failures')]
 
-        for _bondmem in _bondmembers:
-            _printbondmem = PrintBondMember(_bondmem)
-            _table.append([_printbondmem.linkstate,
-                           "%s(%s)" % (_printbondmem.name,
-                                       self.abbrev_bondstate(_bondmem)),
-                           _printbondmem.speed,
-                           _bondmem.counters.total_tx,
-                           _bondmem.counters.total_rx,
-                           _bondmem.counters.total_err,
-                           _bondmem.linkfailures])
+            for _bondmem in _bondmembers:
+                _printbondmem = PrintBondMember(_bondmem)
+                _table.append([_printbondmem.linkstate,
+                               "%s(%s)" % (_printbondmem.name,
+                                           self.abbrev_bondstate(_bondmem)),
+                               _printbondmem.speed,
+                               _bondmem.counters.total_tx,
+                               _bondmem.counters.total_rx,
+                               _bondmem.counters.total_err,
+                               _bondmem.linkfailures])
+        else:
+            _header = ['', _('port'), _('speed'),
+                       _('link_failures')]
 
-        return tabulate(_table, _header, floatfmt='.0f') + self.new_line()
+            for _bondmem in _bondmembers:
+                _printbondmem = PrintBondMember(_bondmem)
+                _table.append([_printbondmem.linkstate,
+                               "%s(%s)" % (_printbondmem.name,
+                                           self.abbrev_bondstate(_bondmem)),
+                               _printbondmem.speed,
+                               _bondmem.linkfailures])
+                return tabulate(_table, _header, floatfmt='.0f') + self.new_line()
 
     def clag_summary(self):
         """

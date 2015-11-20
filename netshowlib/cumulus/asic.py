@@ -29,15 +29,22 @@ def switching_asic_discovery():
 
 def cacheinfo():
     """
-    :returns: ccache info for asic info format looks like this
-    { 'kernelports':
-          'swp1': { 'asicname':'xe11',
+    Returns:
+        cache info for asic info format looks like this::
+
+            { 'kernelports':
+                'swp1': { 'asicname':'xe11',
                     'initial_speed': '10000'}
-      'asicports': {
-          'xe11': 'swp11' }
-    }
+                'asicports': {
+                    'xe11': 'swp11' }
+            }
+
+        If the asic cannot be detected it returns::
+
+            { 'kernelports': {}, 'asicports': {} }
+
     """
-    cache = {}
+    cache = {'kernelports': {}, 'asicports': {}}
     asic = switching_asic_discovery()
     if asic:
         cache = asic.parse_speed_and_name_info()
@@ -53,6 +60,15 @@ class Asic(object):
         self.ifacename = name
 
     def run(self):
+        """
+        Runs the asic checker to determine if kernel ports have a corresponding asic
+        port name
+        Returns:
+            The hash with kernelname -> asicname mapping. Something like this::
+
+                { 'asicname': 'xe11', 'initial_speed': '10000' }
+
+        """
         if not self._cache:
             cache = cacheinfo()
             return cache['kernelports'].get(self.ifacename)
@@ -63,6 +79,8 @@ class Asic(object):
 class BroadcomAsic(object):
     """
     class with functions to get names and initial port speed from broadcom
+    This class only works where the Broadcom has a single chip. Multiple
+    Broadcom chip support has not been developed yet. It is on the roadmap
     """
     def __init__(self):
         self.porttab = PORTTAB_FILELOCATION

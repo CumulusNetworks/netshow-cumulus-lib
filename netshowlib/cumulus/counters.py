@@ -125,26 +125,33 @@ class Counters(object):
         """
         :return: total tx counters
         """
-        return self.tx.get('unicast') + \
-            self.tx.get('multicast') + \
-            self.tx.get('broadcast')
+        if self.tx:
+          return self.tx.get('unicast') + \
+              self.tx.get('multicast') + \
+              self.tx.get('broadcast')
 
     @property
     def total_rx(self):
         """
         :return: total rx counters
         """
-        return self.rx.get('unicast') + \
-            self.rx.get('multicast') + \
-            self.rx.get('broadcast')
+        if self.rx:
+          return self.rx.get('unicast') + \
+              self.rx.get('multicast') + \
+              self.rx.get('broadcast')
 
     @property
     def total_err(self):
         """
         :return: total  error counters
         """
-        return self.rx.get('errors') + \
-            self.tx.get('errors')
+        if self.rx and self.tx:
+          return self.rx.get('errors') + \
+              self.tx.get('errors')
+        if self.rx:
+            return self.rx.get('errors')
+        if self.tx:
+            return self.tx.get('errors')
 
     @property
     def all(self):
