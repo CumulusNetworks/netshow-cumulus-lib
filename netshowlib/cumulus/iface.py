@@ -217,6 +217,14 @@ class Iface(linux_iface.Iface):
 
     @property
     def counters(self):
+        if self.is_bond():
+            self._counters = counters.Counters(name=self.name, cache=None)
+            for _bondmem in self.members.values():
+               for _key in self._counters.tx.keys():
+                 self._counters.tx[_key] += _bondmem.counters.tx[_key]
+               for _key in self._counters.rx.keys():
+                 self._counters.rx[_key] += _bondmem.counters.rx[_key]
+            return self._counters 
         if not self.is_phy():
             return None
         if self._counters is None:
