@@ -146,7 +146,7 @@ class PrintIface(linux_printiface.PrintIface):
             this returns nothing
         """
         _counters = self.iface.counters
-        if not _counters and not _counters.tx:
+        if not _counters or not _counters.tx:
             return ''
         _counters_all = _counters.all
         _header = [_('counters'), _('tx'), _('rx')]

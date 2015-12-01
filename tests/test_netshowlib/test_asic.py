@@ -36,8 +36,24 @@ def test_cacheinfo(mock_exec):
     with mock.patch('io.open') as mock_open:
         mock_open.side_effect = mod_args_generator(values)
         _output = asic.cacheinfo()
-        assert_equals(_output['kernelports']['swp1']['asicname'], 'xe0')
+        assert_equals(_output['kernelports']['swp1']['asicname'], 'xe0.0')
         assert_equals(_output['kernelports']['swp1']['initial_speed'], '10000')
+
+
+@mock.patch('netshowlib.cumulus.asic.linux_common.exec_command')
+def test_rmp_cacheinfo(mock_exec):
+    mock_exec.return_value = io.open(
+        'tests/test_netshowlib/rmp_lspci_output.txt', 'rb').read()
+    values = {
+        ('/var/lib/cumulus/porttab',): io.open('tests/test_netshowlib/rmp_porttab'),
+        ('/etc/bcm.d/config.bcm',): io.open('tests/test_netshowlib/rmp_config.bcm')
+    }
+
+    with mock.patch('io.open') as mock_open:
+        mock_open.side_effect = mod_args_generator(values)
+        _output = asic.cacheinfo()
+        assert_equals(_output['kernelports']['swp41']['asicname'], 'ge16.1')
+        assert_equals(_output['kernelports']['swp41']['initial_speed'], '1000')
 
 
 @mock.patch('netshowlib.cumulus.asic.linux_common.exec_command')

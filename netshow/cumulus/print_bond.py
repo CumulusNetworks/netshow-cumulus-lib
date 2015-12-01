@@ -109,14 +109,15 @@ class PrintBond(cumulus_print_iface.PrintIface, linux_print_bond.PrintBond):
         _header = ['', _('port'), _('speed'),
                    _('tx'), _('rx'), _('err'), _('link_failures')]
         _table = []
-        _bondmembers = self.iface.members.values()
+        _bondmembers = self.iface.members
         if len(_bondmembers) == 0:
             return _('no_bond_members_found')
-        if _bondmembers[0].counters.tx:
+        first_member = next(iter(self.iface.members))
+        if _bondmembers[first_member].counters.tx:
             _header = ['', _('port'), _('speed'),
                        _('tx'), _('rx'), _('err'), _('link_failures')]
 
-            for _bondmem in _bondmembers:
+            for _bondmem in _bondmembers.values():
                 _printbondmem = PrintBondMember(_bondmem)
                 _table.append([_printbondmem.linkstate,
                                "%s(%s)" % (_printbondmem.name,
@@ -126,18 +127,19 @@ class PrintBond(cumulus_print_iface.PrintIface, linux_print_bond.PrintBond):
                                _bondmem.counters.total_rx,
                                _bondmem.counters.total_err,
                                _bondmem.linkfailures])
+            return tabulate(_table, _header, floatfmt='.0f') + self.new_line()
         else:
             _header = ['', _('port'), _('speed'),
                        _('link_failures')]
 
-            for _bondmem in _bondmembers:
+            for _bondmem in _bondmembers.values():
                 _printbondmem = PrintBondMember(_bondmem)
                 _table.append([_printbondmem.linkstate,
                                "%s(%s)" % (_printbondmem.name,
                                            self.abbrev_bondstate(_bondmem)),
                                _printbondmem.speed,
                                _bondmem.linkfailures])
-                return tabulate(_table, _header, floatfmt='.0f') + self.new_line()
+            return tabulate(_table, _header, floatfmt='.0f') + self.new_line()
 
     def clag_summary(self):
         """
