@@ -79,15 +79,16 @@ class Asic(object):
 class BroadcomAsic(object):
     """
     class with functions to get names and initial port speed from broadcom
-    This class only works where the Broadcom has a single chip. Multiple
-    Broadcom chip support has not been developed yet. It is on the roadmap
+    This class works with Broadcom chips with multiple phys
     """
     def __init__(self):
         self.porttab = PORTTAB_FILELOCATION
         self.bcmd = BCMD_FILELOCATION
-        self.asichash = {'name': 'broadcom',
-                         'kernelports': {},
-                         'asicports': {}}
+        self.asichash = {
+            'name': 'broadcom',
+            'kernelports': {},
+            'asicports': {}
+        }
 
     def parse_speed_and_name_info(self):
         self.parse_ports_file()
@@ -97,7 +98,8 @@ class BroadcomAsic(object):
     def parse_ports_file(self):
         """
         parses porttabs file to generate mapping between kernel
-        port name and asic port name
+        port name and asic port name. Asic port names have the format of
+        asicname.sdk_intf_number. Eg. xe1.0
         """
         try:
             porttab = io.open(self.porttab).read()
@@ -110,8 +112,8 @@ class BroadcomAsic(object):
                 linesplit = line.split()
                 self.asichash['kernelports'][linesplit[0]] = {}
                 porthash = self.asichash['kernelports'][linesplit[0]]
-                porthash['asicname'] = linesplit[1]
-                self.asichash['asicports'][linesplit[1]] = linesplit[0]
+                porthash['asicname'] = "%s.%s" % (linesplit[1], linesplit[2])
+                self.asichash['asicports'][porthash['asicname']] = linesplit[0]
 
     def parse_initial_speed_file(self):
         """
@@ -126,7 +128,12 @@ class BroadcomAsic(object):
         for line in textio:
             if line.startswith('port_init_speed'):
                 (portnamepart, speed) = line.split('=')
-                asicportname = portnamepart.split('_')[-1]
+                split_portnamepart = portnamepart.split('_')[-1].split('.')
+                if len(split_portnamepart) > 1:
+                    sdk_intfname = split_portnamepart[1]
+                else:
+                    sdk_intfname = "0"
+                asicportname = "%s.%s" % (split_portnamepart[0], sdk_intfname)
                 kernelportname = self.asichash['asicports'].get(asicportname)
                 if kernelportname:
                     self.asichash['kernelports'][kernelportname]['initial_speed'] = speed.strip()
