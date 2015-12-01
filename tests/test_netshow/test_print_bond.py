@@ -18,7 +18,7 @@
 import netshow.cumulus.print_bond as print_bond
 import netshowlib.cumulus.bond as cumulus_bond
 import mock
-from asserts import assert_equals, mod_args_generator, mock_open_str
+from asserts import assert_equals, mod_args_generator
 import io
 
 
@@ -79,13 +79,12 @@ class TestPrintBond(object):
 
         mock_exec.side_effect = mod_args_generator(values3)
         values10 = {
+            ('.pdbrc',): io.open('tests/test_netshow/test_pdbrc'),
             ('/proc/net/bonding/bond0',): io.open('tests/test_netshow/proc_net_bonding.txt'),
             ('/var/lib/cumulus/porttab',): io.open('tests/test_netshowlib/xe_porttab'),
             ('/etc/bcm.d/config.bcm',): io.open('tests/test_netshowlib/config_xe.bcm')
         }
 
-        values = {
-        }
         values1 = {('carrier',): '1',
                    ('operstate',): 'up',
                    ('speed',): '1000',
@@ -100,18 +99,16 @@ class TestPrintBond(object):
         mock_symlink.side_effect = mod_args_generator(values5)
         mock_read_from_sys.side_effect = mod_args_generator(values1)
         mock_file_oneline.side_effect = mod_args_generator(values2)
-
-        with mock.patch(mock_open_str()) as mock_open:
-            with mock.patch('io.open') as mock_open2:
-                mock_open2.side_effect = mod_args_generator(values10)
-                mock_open.side_effect = mod_args_generator(values)
-                _output = self.piface.bondmem_details()
-                outputtable = _output.split('\n')
-                assert_equals(outputtable[0].split(),
-                              ['port', 'speed', 'tx', 'rx', 'err',
-                               'link_failures'])
-                assert_equals(outputtable[2].split(),
-                              ['up', 'swp2(P)', '1G(sfp)', '1500',
-                               '600', '30', '11'])
-                assert_equals(outputtable[3].split(),
-                              ['up', 'swp3(N)', '1G', '1500', '600', '30', '0'])
+        with mock.patch('io.open') as mock_open2:
+            mock_open2.side_effect = mod_args_generator(values10)
+#            from nose.tools import set_trace; set_trace()
+            _output = self.piface.bondmem_details()
+            outputtable = _output.split('\n')
+            assert_equals(outputtable[0].split(),
+                          ['port', 'speed', 'tx', 'rx', 'err',
+                           'link_failures'])
+            assert_equals(outputtable[2].split(),
+                          ['up', 'swp2(P)', '1G(sfp)', '1500',
+                           '600', '30', '11'])
+            assert_equals(outputtable[3].split(),
+                          ['up', 'swp3(N)', '1G', '1500', '600', '30', '0'])
